@@ -1,8 +1,11 @@
 {
-  "tasks": {
-    "dev": "deno run --watch main.ts"
-  },
-  "fmt": {
-    "indentWidth": 4
-  }
+    "name": "@falentio/anaid",
+    "version": "0.1.0",
+    "exports": "./mod.ts",
+    "tasks": {
+        "dev": "deno run --watch main.ts"
+    },
+    "fmt": {
+        "indentWidth": 4
+    }
 }
