@@ -7,7 +7,9 @@ export type AnaidFactoryOptions = {
     bufferSize?: number;
 };
 
-export function anaidFactory(opts: AnaidFactoryOptions = {}) {
+export type AnaidFn = (l?: number) => string;
+
+export function anaidFactory(opts: AnaidFactoryOptions = {}): AnaidFn {
     const {
         defaultLen = 16,
         prefix = "",
@@ -46,7 +48,7 @@ export function anaidFactory(opts: AnaidFactoryOptions = {}) {
     };
 }
 
-export const anaid = anaidFactory();
+export const anaid: AnaidFn = anaidFactory();
 
 /** @internal exported for testing */
 export function hashInt(n: number) {
