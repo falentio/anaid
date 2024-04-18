@@ -1,4 +1,5 @@
 import { MILLISECONDS_IN_HOURS } from "./constant.ts";
+import { cryptoGenerator } from "./random.ts";
 
 export type AnaidFactoryOptions = {
     defaultLen?: number;
@@ -7,54 +8,44 @@ export type AnaidFactoryOptions = {
     bufferSize?: number;
 };
 
-export type AnaidFn = (l?: number) => string;
-
-export function anaidFactory(opts: AnaidFactoryOptions = {}): AnaidFn {
-    const {
-        defaultLen = 16,
-        prefix = "",
-        timestamp = true,
-        bufferSize = 1024,
-    } = opts;
-    let bytes = crypto.getRandomValues(
-        new Uint8Array(
-            new ArrayBuffer(bufferSize),
-        ),
-    );
-    let offset = 0;
-    return (l = defaultLen) => {
-        let result = prefix;
+export type AnaidFn<T extends Record<string, string>> = {
+    (l?: number): string;
+    (prefix: keyof T | undefined, l?: number): string;
+};
+export function anaidFactory<T extends Record<string, string>>(
+    prefixes: T = {} as T,
+    defaultLen: number = 16,
+    timestamp = true,
+    generator: () => Generator<number> = cryptoGenerator(1024),
+): AnaidFn<T> {
+    const fn: AnaidFn<T> = (
+        maybeLenOrPrefix: keyof T | number | undefined = undefined,
+        len = defaultLen,
+    ) => {
+        if (typeof maybeLenOrPrefix === "number") {
+            return fn(undefined, maybeLenOrPrefix);
+        }
+        const prefix = maybeLenOrPrefix && prefixes[maybeLenOrPrefix];
+        let result = prefix || "";
         if (timestamp) {
             const days = (Date.now() / MILLISECONDS_IN_HOURS) | 0;
             result += hashInt(days);
         }
-        const over = result.length;
-        const size = Math.ceil(l - over);
-        let remain = 0;
-        for (let i = 0; i < l; i++) {
-            let b = bytes[i + offset];
-            b += remain * 36;
-            remain = b % 36;
-            b -= remain;
-            b /= 36;
-            result += b.toString(36);
-            offset++;
-            if (offset === bufferSize) {
-                bytes = crypto.getRandomValues(bytes);
-                offset = 0;
-            }
+        for (const b of generator()) {
+            result += (b % 32).toString(32);
+            if (result.length === len) return result;
         }
-        return result.slice(0, l);
+        return result;
     };
+    return fn;
 }
 
-export const anaid: AnaidFn = anaidFactory();
-
+export const anaid = anaidFactory();
 /** @internal exported for testing */
 export function hashInt(n: number) {
     n = ((n >>> 5) | (n << (32 - 5))) >>> 0;
     n = Math.imul(n, 11 ** 8) >>> 0;
-    return (n % 1679616)
-        .toString(36)
+    return (n % 1048571)
+        .toString(32)
         .padStart(4, "0");
 }
