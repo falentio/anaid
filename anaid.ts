@@ -40,7 +40,8 @@ export function anaidFactory<T extends Record<string, string>>(
     return fn;
 }
 
-export const anaid = anaidFactory();
+// deno-lint-ignore ban-types
+export const anaid: AnaidFn<{}> = anaidFactory();
 /** @internal exported for testing */
 export function hashInt(n: number) {
     n = ((n >>> 5) | (n << (32 - 5))) >>> 0;
