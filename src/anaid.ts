@@ -8,13 +8,13 @@ export type AnaidFactoryOptions = {
     bufferSize?: number;
 };
 
-// deno-lint-ignore ban-types
-export type AnaidFn<T extends Record<string, string> = {}> = {
+export type AnaidFn<T extends Record<string, string>> = {
     (l?: number): string;
     (prefix: keyof T | undefined, l?: number): string;
 };
 
-export function anaidFactory<T extends Record<string, string>>(
+// deno-lint-ignore ban-types
+export function anaidFactory<T extends Record<string, string> = {}>(
     prefixes: T = {} as T,
     defaultLen: number = 16,
     timestamp = true,
