@@ -1,4 +1,4 @@
-import { EIGHT_HOURS } from "./constant.ts";
+import { timestampHash } from "./hash.ts";
 import { cryptoGenerator } from "./random.ts";
 
 export type AnaidFactoryOptions = {
@@ -20,7 +20,7 @@ export function anaidFactory<T extends Record<string, string> = {}>(
     timestamp = true,
     generator: () => Iterable<number> = cryptoGenerator(1024),
 ): AnaidFn<T> {
-    return function fn(
+    return function (
         maybeLenOrPrefix: keyof T | number | undefined = undefined,
         len: number = defaultLen,
     ) {
@@ -28,14 +28,17 @@ export function anaidFactory<T extends Record<string, string> = {}>(
             len = maybeLenOrPrefix;
             maybeLenOrPrefix = undefined;
         }
-        let result = maybeLenOrPrefix && prefixes[maybeLenOrPrefix] || "";
-        if (timestamp) {
-            const h = ((Date.now() - 1409904000000) / EIGHT_HOURS) | 0;
-            result += h.toString(32).padStart(3, "0");
+        if (len < 11) {
+            throw new TypeError("Anaid has minimum length of 11");
         }
+        let result = maybeLenOrPrefix ? prefixes[maybeLenOrPrefix] : "";
+        const ts = timestamp ? timestampHash() : "";
         for (const b of generator()) {
-            result += (b % 32).toString(32);
+            result += ((b / 255 * 46656) % 36 | 0).toString(36);
             if (result.length >= len) return result;
+            if (ts && (result.length % 3 === 2) && result.length < 9) {
+                result += ts[result.length / 3 | 0];
+            }
         }
         return result;
     };
