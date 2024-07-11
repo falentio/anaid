@@ -7,6 +7,5 @@ Deno.test("hashInt", () => {
         const h = intHash(i);
         assert(idxs[h] !== true, `Fail on ${i}th iterations`);
         idxs[h] = true;
-        if (i < 1e3) console.log(h);
     }
 });

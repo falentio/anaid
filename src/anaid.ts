@@ -8,30 +8,29 @@ export type AnaidFactoryOptions = {
     bufferSize?: number;
 };
 
-export type AnaidFn<T extends Record<string, string>> = {
+export type AnaidFn<T extends string> = {
     (l?: number): string;
-    (prefix: keyof T | undefined, l?: number): string;
+    (prefix: T, l?: number): string;
 };
 
-// deno-lint-ignore ban-types
-export function anaidFactory<T extends Record<string, string> = {}>(
-    prefixes: T = {} as T,
+export function anaidFactory<T extends string = string>(
     defaultLen: number = 16,
     timestamp = true,
     generator: () => Iterable<number> = cryptoGenerator(1024),
 ): AnaidFn<T> {
     return function (
-        maybeLenOrPrefix: keyof T | number | undefined = undefined,
+        maybeLenOrPrefix: T | number | undefined = undefined,
         len: number = defaultLen,
     ) {
+        let prefix = maybeLenOrPrefix as string | undefined
         if (typeof maybeLenOrPrefix === "number") {
             len = maybeLenOrPrefix;
-            maybeLenOrPrefix = undefined;
+            prefix = undefined;
         }
         if (len < 11) {
             throw new TypeError("Anaid has minimum length of 11");
         }
-        let result = maybeLenOrPrefix ? prefixes[maybeLenOrPrefix] : "";
+        let result = prefix || "";
         const ts = timestamp ? timestampHash() : "";
         for (const b of generator()) {
             result += ((b / 255 * 46656) % 36 | 0).toString(36);

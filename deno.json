@@ -1,6 +1,6 @@
 {
     "name": "@falentio/anaid",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "exports": "./mod.ts",
     "tasks": {
         "dev": "deno run --watch main.ts"
