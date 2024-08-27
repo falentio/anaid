@@ -27,17 +27,11 @@ export function anaidFactory<T extends string = string>(
             len = maybeLenOrPrefix;
             prefix = undefined;
         }
-        if (len < 11) {
-            throw new TypeError("Anaid has minimum length of 11");
-        }
         let result = prefix || "";
-        const ts = timestamp ? timestampHash() : "";
+        result += timestamp ? timestampHash() : "";
         for (const b of generator()) {
             result += ((b / 255 * 46656) % 36 | 0).toString(36);
             if (result.length >= len) return result;
-            if (ts && (result.length % 3 === 2) && result.length < 9) {
-                result += ts[result.length / 3 | 0];
-            }
         }
         return result;
     };
