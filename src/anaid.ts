@@ -10,7 +10,7 @@ export type AnaidFactoryOptions = {
 
 export type AnaidFn<T extends string> = {
     (l?: number): string;
-    (prefix: T, l?: number): string;
+    <U extends T>(prefix: U, l?: number): `${U}${string}`;
 };
 
 export function anaidFactory<T extends string = string>(
@@ -30,9 +30,9 @@ export function anaidFactory<T extends string = string>(
         let result = prefix || "";
         result += timestamp ? timestampHash() : "";
         for (const b of generator()) {
-            result += ((b / 255 * 46656) % 36 | 0).toString(36);
+            result += (b % 32).toString(32);
             if (result.length >= len) return result;
         }
         return result;
-    };
+    } as AnaidFn<T>;
 }
